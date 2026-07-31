@@ -5,7 +5,7 @@ Morrosquillo (Sucre, Colombia) a partir de **1.341 polígonos dibujados a mano**
 usando **Google Satellite Embeddings** (AlphaEarth) y un clasificador
 **Random Forest** en Google Earth Engine.
 
-**Visor en línea:** https://atarraia.github.io/cuerpos-agua-morrosquillo/
+**Visor en línea:** https://atarraia.github.io/SAGEMA-cuerpos-agua/
 
 ---
 
