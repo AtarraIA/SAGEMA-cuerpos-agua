@@ -1,0 +1,82 @@
+{
+ "prob_2017_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/d84cfdc772f874e0f93888f87cebf598-5d306c6e2417036a24537ed95bb371c5/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2018_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/73800330111ab2badbe635f6faa6373d-8dcd72352b4078f89c0104a495230871/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2019_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/d8efb4d9e69c252d24dc9608d9a33317-985be2c228c9baeab0a22f358f9048d6/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2020_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/2cfb908bd168d1cdb4fd2c2c7f175e25-0a49b4589480384c9ffb425e055fbda8/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2021_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/a5585ff2911d8e7676a783928a43a11f-7d0a4828a7f1689d433f9851f987229f/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2022_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/065c21ffbcd1c198eca71ac83f670d14-ea90c0c98c6a43111a0fae05a6a91c67/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2023_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/226807ebf0cac1bb8f59d03f65f043f5-9d7ae54a82b84b83b53e3246be708de1/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2024_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/4e59cf46a54e42416b95dd81e52889da-8d97d73fc617e14601a1d92fb2e53736/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2025_none": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/f2b0c70ec5700732b42531828762f30c-c3722afa860ddfc25b10929ae8f829ad/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2025_medium": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/8d2477f6c740423ce1946466ef16ff20-a8bd3a26cd0a9a9ba8aabd9dd8f727ab/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "prob_2025_high": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/fc02a321bac8e61fabc12bf878d53860-e6d088a37f0368b49749512766665baa/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2017": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/7d2160229f4f7a41bbd7998d5d0232c8-c2199819c50298b8a4964efee0ab8e3d/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2018": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/de38961be168358e343bc14a90bed601-0fd47d13e9ca49bc1f83ae0386cee800/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2019": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/16ecfac299d6a2516c4cb3a81e21fc07-1222ee09fd0f3bec1a1b0639ff3c64f1/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2020": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/8f7f35f86e86f4dff040d6041e7e9fe0-c16435d4eb2509c2a7b60cd3c0d168ae/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2021": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/79fac514a277fda090d18e39b0a33a94-4044a0c7170985a0eeec64b73a49dd90/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2022": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/38926456fa5981c66f3c71ff4fe23569-5c0958259be58b500f7d35ce86dc3c5d/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2023": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/01fbddbbf44a60dc42fde1b748b53f63-02a8ea72ac6a69f72b04242e12032ee9/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2024": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/a3bc42e4518c45bfbc658110649f6e7e-44218a0d50f885cbe2e77d85149e2382/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ },
+ "s2_2025": {
+  "url": "https://earthengine.googleapis.com/v1/projects/lofty-tokenizer-437115-e3/maps/4a7c9780d84d42c46eb194347e373bf9-204bcc4a502872efecf6081ff7ab3959/tiles/{z}/{x}/{y}",
+  "created": 1785511908.251087
+ }
+}

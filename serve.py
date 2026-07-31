@@ -17,6 +17,7 @@ Run:  python3 serve.py     then open http://localhost:8777
 import ee, json, os, threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
+from tile_cache import get_url
 
 PROJECT = 'lofty-tokenizer-437115-e3'
 HERE    = os.path.dirname(os.path.abspath(__file__))
@@ -106,11 +107,15 @@ def s2_image(year):
 
 
 def tile_url(key, visual):
+    """URL de teselas, con caché en memoria y en disco.
+
+    La caché en disco (tile_cache.json) hace que reiniciar el servidor no
+    vuelva a entrenar los modelos: las URLs ya calculadas se reutilizan.
+    """
     with _lock:
         if key in _url_cache:
             return _url_cache[key]
-    m = ee.data.getMapId({'image': visual})
-    url = m['tile_fetcher'].url_format
+    url = get_url(key, lambda: ee.data.getMapId({'image': visual})['tile_fetcher'].url_format)
     with _lock:
         _url_cache[key] = url
     return url

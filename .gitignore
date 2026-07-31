@@ -3,3 +3,4 @@ __pycache__/
 web/data/*.png
 web/data/blobs_*.json
 .ipynb_checkpoints/
+tile_cache.json.tmp

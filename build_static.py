@@ -9,7 +9,8 @@ ya resueltas (son públicas) y copia todos los datos necesarios.
 IMPORTANTE: las URLs de teselas de Earth Engine caducan (semanas). Para
 refrescarlas basta con volver a ejecutar este script y hacer commit.
 """
-import ee, json, os, shutil
+import ee, json, os, shutil, sys
+from tile_cache import get_url
 
 ee.Initialize(project='lofty-tokenizer-437115-e3')
 
@@ -60,8 +61,14 @@ def s2_image(year):
     return col.reduce(ee.Reducer.percentile([25])).rename(col.first().bandNames())
 
 
-def url(image):
-    return ee.data.getMapId({'image': image})['tile_fetcher'].url_format
+def url(image, key, force=False):
+    """URL de teselas, reutilizando la caché en disco (ver tile_cache.py).
+
+    Así el entrenamiento sólo ocurre la primera vez: al repetir el build las
+    URLs ya guardadas se reutilizan y el script termina en segundos.
+    """
+    return get_url(key, lambda: ee.data.getMapId({'image': image})['tile_fetcher'].url_format,
+                   force=force)
 
 
 def main():
@@ -77,18 +84,23 @@ def main():
                   'medium': {'neg': 16000, 'fp': 2.95, 'prec': 0.981, 'rec': 0.832, 'acc': 0.881},
                   'high':   {'neg': 25000, 'fp': 1.75, 'prec': 0.988, 'rec': 0.780, 'acc': 0.852}}}
 
+    force = '--force' in sys.argv
+
     for y in years:
         print('  probabilidad', y, flush=True)
-        layers['prob'][str(y)] = {'none': url(prob_image(y, 'none').visualize(
-            min=0, max=1, palette=MAGMA))}
+        layers['prob'][str(y)] = {'none': url(
+            prob_image(y, 'none').visualize(min=0, max=1, palette=MAGMA),
+            f'prob_{y}_none', force)}
     for pen in ('medium', 'high'):
         print('  probabilidad 2025', pen, flush=True)
-        layers['prob']['2025'][pen] = url(prob_image(2025, pen).visualize(
-            min=0, max=1, palette=MAGMA))
+        layers['prob']['2025'][pen] = url(
+            prob_image(2025, pen).visualize(min=0, max=1, palette=MAGMA),
+            f'prob_2025_{pen}', force)
     for y in years:
         print('  Sentinel-2', y, flush=True)
-        layers['s2'][str(y)] = url(s2_image(y).visualize(
-            bands=['B4', 'B3', 'B2'], min=0, max=3000))
+        layers['s2'][str(y)] = url(
+            s2_image(y).visualize(bands=['B4', 'B3', 'B2'], min=0, max=3000),
+            f's2_{y}', force)
 
     os.makedirs(DOCS, exist_ok=True)
     json.dump(layers, open(os.path.join(DOCS, 'layers.json'), 'w'), indent=1)
