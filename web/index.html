@@ -164,8 +164,8 @@
       <div class="hint">Blue = higher in A (gained). Red = higher in B (lost).</div>
     </section>
 
-    <label>Overlay opacity <span id="op-val">85%</span></label>
-    <input type="range" id="opacity" min="0" max="100" value="85">
+    <label>Overlay opacity <span id="op-val">0%</span></label>
+    <input type="range" id="opacity" min="0" max="100" value="0">
 
     <h2>Detections <span class="sub" id="det-avail"></span></h2>
     <div id="det-wrap">
@@ -514,6 +514,8 @@ if(matchMedia('(max-width: 720px)').matches){
   try{ await loadPonds(); }catch(e){ $('#show-ponds').disabled=true; }
   await setBase();
   await setOverlay();
+  // vista por defecto: los candidatos rojos sobre la imagen del terreno
+  if(detAvailable()) await findBlobs();
   $('#status').textContent=`${n} years: ${Y[0]}–${Y[n-1]} · tiles rendered live by Earth Engine`;
 })();
 </script>

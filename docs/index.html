@@ -164,8 +164,8 @@
         Rojo = mayor en B (desapareció o se redujo).</div>
     </section>
 
-    <label>Opacidad de la capa <span id="op-val">85%</span></label>
-    <input type="range" id="opacity" min="0" max="100" value="85">
+    <label>Opacidad de la capa <span id="op-val">0%</span></label>
+    <input type="range" id="opacity" min="0" max="100" value="0">
 
     <h2>Detecciones</h2>
     <div id="det-wrap">
@@ -494,6 +494,8 @@ if(matchMedia('(max-width: 720px)').matches){
   syncPenalty(); syncDet();
   try{ await loadPonds(); }catch(e){ $('#show-ponds').disabled=true; }
   setBase(); await setOverlay();
+  // vista por defecto: los candidatos rojos sobre la imagen del terreno
+  if(detOK()) await findBlobs();
   $('#status').textContent=`${n} años: ${Y[0]}–${Y[n-1]}`;
 })();
 </script>
