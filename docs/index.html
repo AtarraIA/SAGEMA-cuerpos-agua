@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuerpos de agua artificiales — Golfo de Morrosquillo</title>
+<meta name="description" content="Detección de estanques acuícolas con Google Satellite Embeddings y Random Forest, 2017–2025.">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root{--panel:rgba(19,22,28,.94);--panel2:#1e222b;--line:#2b303b;
+        --ink:#f2f3f5;--mut:#9aa0ab;--accent:#3987e5;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0f1115;color:var(--ink);
+    font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  #map{position:fixed;inset:0;background:#0b0d11}
+  .leaflet-container{background:#0b0d11}
+  aside{position:fixed;top:14px;left:14px;width:322px;max-height:calc(100vh - 28px);
+    background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);
+    border-radius:14px;padding:14px 16px;overflow-y:auto;z-index:1000;
+    box-shadow:0 8px 40px rgba(0,0,0,.55)}
+  aside.collapsed{width:auto;padding:10px 12px;overflow:visible}
+  aside.collapsed .body{display:none}
+  .head{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  h1{font-size:15px;margin:0}
+  .sub{color:var(--mut);font-size:11.5px}
+  #toggle-panel{background:var(--panel2);border:1px solid var(--line);color:var(--mut);
+    border-radius:8px;cursor:pointer;font-size:15px;line-height:1;padding:5px 9px}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);
+    margin:16px 0 7px;font-weight:600}
+  .modes{display:flex;gap:5px;background:var(--panel2);padding:4px;border-radius:10px}
+  .modes button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;
+    border-radius:7px;cursor:pointer;font-size:12px;font-weight:600}
+  .modes button.active{background:var(--accent);color:#fff}
+  label{display:block;font-size:11.5px;color:var(--mut);margin:9px 0 3px}
+  select{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:7px}
+  input[type=range]{width:100%}
+  .row{display:flex;gap:7px}.row>div{flex:1}
+  .chip{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .bar{height:11px;border-radius:6px;margin:7px 0 2px}
+  .ticks{display:flex;justify-content:space-between;color:var(--mut);font-size:10.5px}
+  .hint{color:var(--mut);font-size:11px;margin-top:6px}
+  .toggle{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .toggle input{width:auto}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line);
+    border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;
+    vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:8px 12px;cursor:pointer;font-size:12.5px;font-weight:600}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:disabled{opacity:.45;cursor:default}
+  #det-find{width:100%;margin-top:4px}
+  .navrow{display:flex;gap:7px;align-items:center;margin-top:8px}
+  .navrow .btn{flex:none}
+  .counter{flex:1;text-align:center;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .counter b{color:var(--ink);font-size:14px}
+  .det-info{margin-top:8px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;padding:8px 10px;font-size:11.5px;line-height:1.6;font-variant-numeric:tabular-nums}
+  .det-info .tag{display:inline-block;padding:1px 7px;border-radius:99px;font-size:10px;
+    font-weight:700;letter-spacing:.03em}
+  .tag.new{background:#3d1f1f;color:#ff8b8b;border:1px solid #6b2b2b}
+  .tag.known{background:#123049;color:#7fc4ff;border:1px solid #1d4d73}
+  .dl{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+  .dlbtn{display:block;text-align:left;text-decoration:none;padding:7px 10px;font-size:11.5px}
+  .dlbtn.subtle{background:transparent;color:var(--mut);font-weight:600}
+  .dlbtn.subtle:hover{color:var(--ink)}
+  .foot{position:fixed;bottom:12px;right:12px;z-index:1000;color:var(--mut);font-size:11px;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 11px;
+    backdrop-filter:blur(10px);max-width:52vw}
+  .leaflet-control-attribution{background:rgba(19,22,28,.8)!important;color:var(--mut)!important}
+  .leaflet-control-attribution a{color:var(--accent)!important}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<aside id="panel">
+  <div class="head">
+    <div>
+      <h1>Probabilidad de estanques</h1>
+      <div class="sub">Golfo de Morrosquillo · Sucre, Colombia</div>
+    </div>
+    <button id="toggle-panel" title="Contraer / expandir">▾</button>
+  </div>
+
+  <div class="body">
+    <div class="modes" id="modes" style="margin-top:12px">
+      <button data-mode="single" class="active">Un año</button>
+      <button data-mode="rgb">RGB (3 años)</button>
+      <button data-mode="diff">Diferencia</button>
+    </div>
+
+    <section id="panel-single">
+      <label>Año de probabilidad</label>
+      <select id="single-year"></select>
+
+      <div id="pen-wrap" hidden>
+        <label>Penalización de falsos positivos <span class="sub" id="pen-avail"></span></label>
+        <select id="penalty">
+          <option value="none">Ninguna — más detecciones</option>
+          <option value="medium" selected>Media — equilibrada</option>
+          <option value="high">Alta — más estricta</option>
+        </select>
+        <div class="hint" id="pen-stats"></div>
+      </div>
+
+      <div class="bar" id="bar-magma"></div>
+      <div class="ticks"><span>0</span><span>probabilidad de estanque</span><span>1</span></div>
+    </section>
+
+    <section id="panel-rgb" hidden>
+      <div class="row">
+        <div><label><span class="chip" style="background:#ff4d4d"></span>Rojo</label><select id="rgb-r"></select></div>
+        <div><label><span class="chip" style="background:#4dff4d"></span>Verde</label><select id="rgb-g"></select></div>
+        <div><label><span class="chip" style="background:#4d7dff"></span>Azul</label><select id="rgb-b"></select></div>
+      </div>
+      <div class="hint">Gris/blanco = estanque presente en los tres años (estable).
+        Un color = presente sobre todo en ese año.</div>
+    </section>
+
+    <section id="panel-diff" hidden>
+      <div class="row">
+        <div><label>Año A</label><select id="diff-a"></select></div>
+        <div><label>Año B</label><select id="diff-b"></select></div>
+      </div>
+      <div class="bar" id="bar-diff"></div>
+      <div class="ticks"><span>−1 perdido</span><span>A − B</span><span>+1 ganado</span></div>
+      <div class="hint">Azul = mayor probabilidad en A (apareció o creció).
+        Rojo = mayor en B (desapareció o se redujo).</div>
+    </section>
+
+    <label>Opacidad de la capa <span id="op-val">85%</span></label>
+    <input type="range" id="opacity" min="0" max="100" value="85">
+
+    <h2>Detecciones</h2>
+    <div id="det-wrap">
+      <button id="det-find" class="btn primary">Buscar manchas (P &gt; 0,7)</button>
+      <div id="det-nav" hidden>
+        <div class="navrow">
+          <button id="det-prev" class="btn">◀</button>
+          <div class="counter"><b id="det-idx">–</b><span id="det-total"></span></div>
+          <button id="det-next" class="btn primary">Siguiente ▶</button>
+        </div>
+        <div class="row" style="margin-top:7px">
+          <div><label>Mostrar</label>
+            <select id="det-filter">
+              <option value="new">Sólo candidatos nuevos</option>
+              <option value="all">Todas las manchas</option>
+              <option value="known">Sobre estanques conocidos</option>
+            </select></div>
+          <div><label>Zoom al saltar</label>
+            <select id="det-zoom">
+              <option value="16">16</option><option value="17" selected>17</option>
+              <option value="18">18</option><option value="19">19</option>
+            </select></div>
+        </div>
+        <div class="det-info" id="det-info"></div>
+        <div class="hint">Pulsa <b>N</b> / <b>→</b> para el siguiente, <b>P</b> / <b>←</b> para el anterior.
+          Haz clic en cualquier recuadro rojo para seleccionarlo.</div>
+
+        <label style="margin-top:12px">Descargar candidatos nuevos (shapefile)</label>
+        <div class="dl">
+          <a class="btn dlbtn" download href="candidates/Pond_Candidates_2025_outlines_magna.zip">⬇ Contornos · MAGNA-SIRGAS</a>
+          <a class="btn dlbtn" download href="candidates/Pond_Candidates_2025_outlines_wgs84.zip">⬇ Contornos · WGS84</a>
+          <a class="btn dlbtn subtle" download href="candidates/Pond_Candidates_2025_magna.zip">⬇ Recuadros · MAGNA-SIRGAS</a>
+          <a class="btn dlbtn subtle" download href="candidates/Pond_Candidates_2025_wgs84.zip">⬇ Recuadros · WGS84</a>
+        </div>
+        <div class="hint"><b>Contornos</b> siguen la forma real de la mancha (úsalos para
+          estadísticas de área). <b>Recuadros</b> son los rectángulos rojos que se ven aquí.
+          MAGNA-SIRGAS coincide con el archivo original Cuerpos_Agua.</div>
+      </div>
+      <div class="hint" id="det-hint">Disponible para 2025 con penalización <b>Alta</b>.</div>
+    </div>
+
+    <h2>Imagen del terreno</h2>
+    <label>Mapa base</label>
+    <select id="base">
+      <optgroup label="Muy alta resolución (submétrica, sin fecha)">
+        <option value="google" selected>Google satélite — igual que GEE</option>
+        <option value="googlehy">Google híbrido (+ vías y etiquetas)</option>
+        <option value="esri">Esri World Imagery</option>
+      </optgroup>
+      <optgroup label="Imagen fechada (elige el año)">
+        <option value="s2">Sentinel-2 del año elegido (10 m)</option>
+      </optgroup>
+      <optgroup label="Otros">
+        <option value="osm">OpenStreetMap</option>
+        <option value="dark">Oscuro (sin imagen)</option>
+      </optgroup>
+    </select>
+    <label>Año de Sentinel-2</label>
+    <select id="s2-year" disabled></select>
+    <div class="hint"><b>Google / Esri</b> son submétricos —se ven estanques y árboles
+      individuales— pero son un mosaico sin fecha. <b>Sentinel-2</b> es de 10 m (su límite
+      real) pero sí es un compuesto por año, útil para ver cómo estaba el terreno.</div>
+
+    <h2>Referencia</h2>
+    <div class="toggle"><input type="checkbox" id="show-ponds" checked><label style="margin:0" for="show-ponds">Polígonos originales (1.341)</label></div>
+    <div class="row" style="margin-top:5px">
+      <div><label>Estilo</label>
+        <select id="pond-style"><option value="outline">Contorno</option><option value="fill">Contorno + relleno</option></select></div>
+      <div><label>Color</label>
+        <select id="pond-color">
+          <option value="#00e5ff">Cian</option><option value="#ffffff">Blanco</option>
+          <option value="#39ff5e">Verde</option><option value="#ff3ba7">Magenta</option>
+        </select></div>
+    </div>
+
+    <div class="hint" id="status">cargando…</div>
+    <div class="hint" style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+      Random Forest sobre <i>Google Satellite Embeddings</i> (64 dimensiones, 10 m),
+      entrenado con 1.341 polígonos dibujados a mano. Exactitud ≈ 91 % sobre el
+      20 % de polígonos reservados para prueba.
+    </div>
+  </div>
+</aside>
+
+<div class="foot" id="foot">Rueda = zoom · arrastrar = desplazar</div>
+
+<script src="vendor/leaflet.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const MAGMA=['#000004','#3b0f70','#8c2981','#de4968','#fe9f6d','#fcfdbf'];
+const DIVERGE=['#2166ac','#67a9cf','#d1e5f0','#f7f7f7','#fddbc7','#ef8a62','#b2182b'];
+const grad=(id,c)=>$('#'+id).style.background=`linear-gradient(90deg,${c.join(',')})`;
+
+let map, overlay=null, baseLayer=null, pondLayer=null, L1=null, MODE='single';
+const GRAY={};            // PNG por año para los modos RGB / diferencia
+let GRID=null;
+
+const BASES={
+  google:()=>L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    {subdomains:['0','1','2','3'],maxZoom:21,maxNativeZoom:21,attribution:'Google Satellite'}),
+  googlehy:()=>L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    {subdomains:['0','1','2','3'],maxZoom:21,maxNativeZoom:21,attribution:'Google Hybrid'}),
+  esri:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:21,maxNativeZoom:19,attribution:'Esri World Imagery'}),
+  osm:()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {maxZoom:21,maxNativeZoom:19,attribution:'© OpenStreetMap'}),
+  dark:()=>L.tileLayer('',{attribution:''}),
+};
+const eeLayer=u=>L.tileLayer(u,{maxZoom:21,maxNativeZoom:18,attribution:'Google Earth Engine'});
+const busy=m=>$('#status').innerHTML=m?`<span class="spin"></span>${m}`:'';
+
+/* ---------- mapa base ---------- */
+function setBase(){
+  const kind=$('#base').value;
+  if(baseLayer){map.removeLayer(baseLayer);baseLayer=null;}
+  if(kind==='s2'){
+    const y=$('#s2-year').value, u=L1.s2[y];
+    if(!u){busy('');$('#status').textContent='Sin teselas Sentinel-2 para '+y;return;}
+    baseLayer=eeLayer(u);
+  } else baseLayer=BASES[kind]();
+  baseLayer.addTo(map); baseLayer.bringToBack();
+  $('#s2-year').disabled = kind!=='s2';
+}
+
+/* ---------- PNG por año (para RGB y diferencia) ---------- */
+async function loadGray(y){
+  if(GRAY[y]) return GRAY[y];
+  const img=new Image(); img.src=`data/prob_${y}.png`; await img.decode();
+  const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+  c.getContext('2d').drawImage(img,0,0);
+  const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+  const a=new Float32Array(c.width*c.height);
+  for(let i=0;i<a.length;i++)a[i]=d[i*4]/255;
+  GRID={w:c.width,h:c.height};
+  GRAY[y]={a,w:c.width,h:c.height}; return GRAY[y];
+}
+function divergeRGB(t){ if(t>=0){const u=Math.min(1,t);return[255,255-u*205,255-u*235];}
+  const u=Math.min(1,-t);return[255-u*205,255-u*120,255];}
+
+async function compositeOverlay(){
+  const b=L1.bbox, bounds=[[b[1],b[0]],[b[3],b[2]]];
+  let W,H,out;
+  if(MODE==='rgb'){
+    const [r,g,bl]=await Promise.all([loadGray(+$('#rgb-r').value),
+      loadGray(+$('#rgb-g').value),loadGray(+$('#rgb-b').value)]);
+    W=r.w;H=r.h; const c=document.createElement('canvas');c.width=W;c.height=H;
+    const ctx=c.getContext('2d'); out=ctx.createImageData(W,H);
+    for(let i=0;i<r.a.length;i++){const k=i*4;
+      out.data[k]=r.a[i]*255;out.data[k+1]=g.a[i]*255;out.data[k+2]=bl.a[i]*255;out.data[k+3]=255;}
+    ctx.putImageData(out,0,0); return {url:c.toDataURL(),bounds};
+  } else {
+    const [A,B]=await Promise.all([loadGray(+$('#diff-a').value),loadGray(+$('#diff-b').value)]);
+    W=A.w;H=A.h; const c=document.createElement('canvas');c.width=W;c.height=H;
+    const ctx=c.getContext('2d'); out=ctx.createImageData(W,H);
+    for(let i=0;i<A.a.length;i++){const rgb=divergeRGB(A.a[i]-B.a[i]),k=i*4;
+      out.data[k]=rgb[0];out.data[k+1]=rgb[1];out.data[k+2]=rgb[2];out.data[k+3]=255;}
+    ctx.putImageData(out,0,0); return {url:c.toDataURL(),bounds};
+  }
+}
+
+/* ---------- capa principal ---------- */
+async function setOverlay(){
+  const op=(+$('#opacity').value)/100;
+  if(overlay){map.removeLayer(overlay);overlay=null;}
+  if(MODE==='single'){
+    const y=$('#single-year').value;
+    const canPen=(L1.penaltyYears||[]).includes(+y);
+    const pen=canPen?$('#penalty').value:'none';
+    const u=(L1.prob[y]||{})[pen]||(L1.prob[y]||{}).none;
+    if(!u){$('#status').textContent='Sin teselas para '+y;return;}
+    overlay=eeLayer(u); overlay.setOpacity(op); overlay.addTo(map);
+    $('#foot').textContent=`Probabilidad ${y}`+(pen!=='none'?` · penalización ${pen}`:'')+
+      ' · rueda = zoom';
+  } else {
+    busy('componiendo…');
+    const {url,bounds}=await compositeOverlay();
+    overlay=L.imageOverlay(url,bounds,{opacity:op,interactive:false}).addTo(map);
+    busy('');
+    $('#foot').textContent=(MODE==='rgb'
+      ?`RGB ${$('#rgb-r').value}/${$('#rgb-g').value}/${$('#rgb-b').value}`
+      :`Diferencia ${$('#diff-a').value} − ${$('#diff-b').value}`)+' · resolución 46 m';
+  }
+  if(pondLayer&&$('#show-ponds').checked)pondLayer.bringToFront();
+  if(blobLayer)blobLayer.bringToFront();
+}
+
+/* ---------- polígonos originales ---------- */
+const pondStyle=()=>{const c=$('#pond-color').value,f=$('#pond-style').value==='fill';
+  return {color:c,weight:1.2,opacity:1,fill:f,fillColor:c,fillOpacity:f?.25:0};};
+async function loadPonds(){
+  const gj=await (await fetch('data/ponds_geo.json')).json();
+  pondLayer=L.geoJSON(gj,{style:pondStyle,interactive:false}).addTo(map);
+}
+
+/* ---------- detecciones ---------- */
+let blobLayer=null, blobs=[], shown=[], cur=-1, curMarker=null;
+const BOX={color:'#ff3b3b',weight:1.6,opacity:.95,fill:true,fillColor:'#ff3b3b',fillOpacity:.08};
+const BOX_SEL={color:'#ffd400',weight:3,opacity:1,fill:true,fillColor:'#ffd400',fillOpacity:.20};
+const detOK=()=>MODE==='single'&&$('#single-year').value==='2025'&&$('#penalty').value==='high';
+function syncDet(){
+  const ok=detOK();
+  $('#det-wrap').style.opacity=ok?1:.45;
+  $('#det-find').disabled=!ok; $('#det-hint').hidden=ok;
+  if(!ok){ if(blobLayer){map.removeLayer(blobLayer);blobLayer=null;} $('#det-nav').hidden=true; }
+}
+async function findBlobs(){
+  $('#det-find').disabled=true; busy('cargando detecciones…');
+  try{
+    const gj=await (await fetch('data/blobs_2025_high_70.json')).json();
+    blobs=gj.features;
+    if(blobLayer)map.removeLayer(blobLayer);
+    blobLayer=L.geoJSON(blobs,{style:BOX,onEachFeature:(f,l)=>l.on('click',()=>{
+      const i=shown.indexOf(f.properties.idx); if(i>=0)go(i);})}).addTo(map);
+    applyFilter(); $('#det-nav').hidden=false; busy('');
+    $('#status').textContent=`${blobs.length.toLocaleString('es')} manchas · `+
+      `${blobs.filter(f=>!f.properties.known).length.toLocaleString('es')} nuevas`;
+  }catch(e){busy('');$('#status').textContent='Error: '+e.message;}
+  $('#det-find').disabled=false;
+}
+function applyFilter(){
+  const m=$('#det-filter').value;
+  shown=blobs.filter(f=>m==='all'?true:m==='new'?!f.properties.known:f.properties.known)
+             .map(f=>f.properties.idx);
+  if(blobLayer)blobLayer.eachLayer(l=>l.setStyle(
+    shown.includes(l.feature.properties.idx)?BOX:{...BOX,opacity:.18,fillOpacity:.02}));
+  cur=-1;
+  $('#det-total').textContent=` / ${shown.length.toLocaleString('es')}`;
+  $('#det-idx').textContent='–';
+  $('#det-info').innerHTML=shown.length?'Pulsa <b>Siguiente ▶</b> para empezar.':'Ninguna mancha con este filtro.';
+  $('#det-prev').disabled=$('#det-next').disabled=!shown.length;
+}
+function go(i){
+  if(!shown.length)return;
+  cur=(i+shown.length)%shown.length;
+  const idx=shown[cur], f=blobs.find(x=>x.properties.idx===idx), p=f.properties;
+  if(blobLayer)blobLayer.eachLayer(l=>{
+    const on=shown.includes(l.feature.properties.idx);
+    l.setStyle(l.feature.properties.idx===idx?BOX_SEL:on?BOX:{...BOX,opacity:.18,fillOpacity:.02});
+    if(l.feature.properties.idx===idx)l.bringToFront();});
+  map.flyTo([p.lat,p.lon],+$('#det-zoom').value,{duration:.6});
+  if(curMarker)map.removeLayer(curMarker);
+  curMarker=L.circleMarker([p.lat,p.lon],{radius:4,color:'#ffd400',weight:2,
+    fillColor:'#ffd400',fillOpacity:1,interactive:false}).addTo(map);
+  $('#det-idx').textContent=(cur+1).toLocaleString('es');
+  $('#det-info').innerHTML=
+    `<span class="tag ${p.known?'known':'new'}">${p.known?'ESTANQUE CONOCIDO':'CANDIDATO NUEVO'}</span><br>`+
+    `área ≈ <b>${p.area_m2.toLocaleString('es')} m²</b> (${(p.area_m2/10000).toFixed(2)} ha)<br>`+
+    `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}<br>`+
+    `<span class="sub">mancha n.º ${idx+1} de ${blobs.length.toLocaleString('es')}</span>`;
+}
+
+/* ---------- interfaz ---------- */
+const opt=(sel,ys,def)=>{sel.innerHTML='';ys.forEach(y=>{const o=document.createElement('option');
+  o.value=y;o.textContent=y;if(y==def)o.selected=true;sel.appendChild(o);});};
+function syncPenalty(){
+  const y=+$('#single-year').value, ok=(L1.penaltyYears||[]).includes(y);
+  $('#pen-wrap').hidden=!ok; if(!ok)return;
+  $('#pen-avail').textContent=`(sólo ${y})`;
+  const s=(L1.penaltyStats||{})[$('#penalty').value];
+  $('#pen-stats').innerHTML=s?`${s.neg.toLocaleString('es')} muestras de fondo · falsos positivos
+    <b style="color:var(--accent)">${String(s.fp).replace('.',',')} %</b> ·
+    precisión ${String(s.prec).replace('.',',')} · exhaustividad ${String(s.rec).replace('.',',')}`:'';
+}
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#modes button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');MODE=b.dataset.mode;
+  $('#panel-single').hidden=MODE!=='single';
+  $('#panel-rgb').hidden=MODE!=='rgb';
+  $('#panel-diff').hidden=MODE!=='diff';
+  syncDet();setOverlay();});
+['single-year','rgb-r','rgb-g','rgb-b','diff-a','diff-b'].forEach(id=>
+  $('#'+id).addEventListener('change',()=>{
+    if(id==='single-year'){syncPenalty();syncDet();} setOverlay();}));
+$('#penalty').addEventListener('change',()=>{syncPenalty();syncDet();setOverlay();});
+$('#opacity').addEventListener('input',()=>{$('#op-val').textContent=$('#opacity').value+'%';
+  if(overlay)overlay.setOpacity((+$('#opacity').value)/100);});
+$('#base').addEventListener('change',setBase);
+$('#s2-year').addEventListener('change',setBase);
+['show-ponds','pond-style','pond-color'].forEach(id=>$('#'+id).addEventListener('change',()=>{
+  if(!pondLayer)return;
+  if($('#show-ponds').checked){pondLayer.addTo(map);pondLayer.setStyle(pondStyle());pondLayer.bringToFront();}
+  else map.removeLayer(pondLayer);}));
+$('#det-find').onclick=findBlobs;
+$('#det-next').onclick=()=>go(cur+1);
+$('#det-prev').onclick=()=>go(cur-1);
+$('#det-filter').addEventListener('change',applyFilter);
+addEventListener('keydown',e=>{
+  if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
+  if(e.key==='n'||e.key==='N'||e.key==='ArrowRight'){e.preventDefault();go(cur+1);}
+  if(e.key==='p'||e.key==='P'||e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}});
+$('#toggle-panel').onclick=()=>{const p=$('#panel');p.classList.toggle('collapsed');
+  $('#toggle-panel').textContent=p.classList.contains('collapsed')?'▸':'▾';};
+
+(async function init(){
+  grad('bar-magma',MAGMA); grad('bar-diff',DIVERGE);
+  map=L.map('map',{center:[9.35,-75.515],zoom:12,maxZoom:21,zoomSnap:.5,
+                   wheelPxPerZoomLevel:90,preferCanvas:true});
+  L.control.scale({imperial:false}).addTo(map);
+  try{ L1=await (await fetch('layers.json')).json(); }
+  catch(e){ $('#status').textContent='No se pudo cargar layers.json'; return; }
+  const Y=L1.years,n=Y.length;
+  opt($('#single-year'),Y,Y[n-1]);
+  opt($('#rgb-r'),Y,Y[0]);opt($('#rgb-g'),Y,Y[Math.floor(n/2)]);opt($('#rgb-b'),Y,Y[n-1]);
+  opt($('#diff-a'),Y,Y[n-1]);opt($('#diff-b'),Y,Y[0]);
+  opt($('#s2-year'),Y,Y[n-1]);
+  syncPenalty(); syncDet();
+  try{ await loadPonds(); }catch(e){ $('#show-ponds').disabled=true; }
+  setBase(); await setOverlay();
+  $('#status').textContent=`${n} años: ${Y[0]}–${Y[n-1]}`;
+})();
+</script>
+</body>
+</html>
