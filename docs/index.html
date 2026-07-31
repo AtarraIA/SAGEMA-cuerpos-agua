@@ -100,8 +100,8 @@
         <label>Penalización de falsos positivos <span class="sub" id="pen-avail"></span></label>
         <select id="penalty">
           <option value="none">Ninguna — más detecciones</option>
-          <option value="medium" selected>Media — equilibrada</option>
-          <option value="high">Alta — más estricta</option>
+          <option value="medium">Media — equilibrada</option>
+          <option value="high" selected>Alta — más estricta</option>
         </select>
         <div class="hint" id="pen-stats"></div>
       </div>
@@ -136,7 +136,7 @@
 
     <h2>Detecciones</h2>
     <div id="det-wrap">
-      <button id="det-find" class="btn primary">Buscar manchas (P &gt; 0,7)</button>
+      <button id="det-find" class="btn primary">Buscar nuevos cuerpos de agua (P &gt; 0,7)</button>
       <div id="det-nav" hidden>
         <div class="navrow">
           <button id="det-prev" class="btn">◀</button>
@@ -147,7 +147,7 @@
           <div><label>Mostrar</label>
             <select id="det-filter">
               <option value="new">Sólo candidatos nuevos</option>
-              <option value="all">Todas las manchas</option>
+              <option value="all">Todos los cuerpos de agua</option>
               <option value="known">Sobre estanques conocidos</option>
             </select></div>
           <div><label>Zoom al saltar</label>
@@ -167,7 +167,7 @@
           <a class="btn dlbtn subtle" download href="candidates/Pond_Candidates_2025_magna.zip">⬇ Recuadros · MAGNA-SIRGAS</a>
           <a class="btn dlbtn subtle" download href="candidates/Pond_Candidates_2025_wgs84.zip">⬇ Recuadros · WGS84</a>
         </div>
-        <div class="hint"><b>Contornos</b> siguen la forma real de la mancha (úsalos para
+        <div class="hint"><b>Contornos</b> siguen la forma real del cuerpo de agua (úsalos para
           estadísticas de área). <b>Recuadros</b> son los rectángulos rojos que se ven aquí.
           MAGNA-SIRGAS coincide con el archivo original Cuerpos_Agua.</div>
       </div>
@@ -347,7 +347,7 @@ async function findBlobs(){
     blobLayer=L.geoJSON(blobs,{style:BOX,onEachFeature:(f,l)=>l.on('click',()=>{
       const i=shown.indexOf(f.properties.idx); if(i>=0)go(i);})}).addTo(map);
     applyFilter(); $('#det-nav').hidden=false; busy('');
-    $('#status').textContent=`${blobs.length.toLocaleString('es')} manchas · `+
+    $('#status').textContent=`${blobs.length.toLocaleString('es')} cuerpos de agua · `+
       `${blobs.filter(f=>!f.properties.known).length.toLocaleString('es')} nuevas`;
   }catch(e){busy('');$('#status').textContent='Error: '+e.message;}
   $('#det-find').disabled=false;
@@ -361,7 +361,7 @@ function applyFilter(){
   cur=-1;
   $('#det-total').textContent=` / ${shown.length.toLocaleString('es')}`;
   $('#det-idx').textContent='–';
-  $('#det-info').innerHTML=shown.length?'Pulsa <b>Siguiente ▶</b> para empezar.':'Ninguna mancha con este filtro.';
+  $('#det-info').innerHTML=shown.length?'Pulsa <b>Siguiente ▶</b> para empezar.':'Ningún cuerpo de agua con este filtro.';
   $('#det-prev').disabled=$('#det-next').disabled=!shown.length;
 }
 function go(i){
@@ -381,7 +381,7 @@ function go(i){
     `<span class="tag ${p.known?'known':'new'}">${p.known?'ESTANQUE CONOCIDO':'CANDIDATO NUEVO'}</span><br>`+
     `área ≈ <b>${p.area_m2.toLocaleString('es')} m²</b> (${(p.area_m2/10000).toFixed(2)} ha)<br>`+
     `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}<br>`+
-    `<span class="sub">mancha n.º ${idx+1} de ${blobs.length.toLocaleString('es')}</span>`;
+    `<span class="sub">cuerpo de agua n.º ${idx+1} de ${blobs.length.toLocaleString('es')}</span>`;
 }
 
 /* ---------- interfaz ---------- */
